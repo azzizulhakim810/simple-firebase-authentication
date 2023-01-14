@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import {  FacebookAuthProvider, getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -7,6 +7,9 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [collectEmail, setCollectEmail] = useState('');
+  const [user, setUser] = useState({});
+
+  const facebookProvider = new FacebookAuthProvider();
 
 
   const handleSignIn = (event) => {
@@ -58,11 +61,45 @@ const Login = () => {
       console.error('error', error);
     })
   }
+
+  const auth = getAuth();
+  const handleFacebookLogIn = () => {
+    signInWithPopup(auth, facebookProvider)
+    .then(result => {
+      const user = result.user;
+      console.log(user);
+      setUser(user);
+    })
+    .catch(error => console.error(error));
+  }
+
+  const handleFacebookLogOut = () => {
+    signOut(auth)
+    .then(() => {
+      setUser({});
+    })
+    .catch(error => {
+      setUser({});
+    });
+  }
+
   return (
     <div>
 
       <div className="w-4/6 mx-auto mt-5">
         <h1 className='text-2xl'>Login Form</h1>
+        
+        <div className='mb-4 mt-3'>
+           { user.uid ? <button className='bg-blue-500 hover:bg-blue-800 text-white font-bold p-2 ps-3 pe-3 rounded' onClick={handleFacebookLogOut}>Facebook Log Out</button> : <button className='bg-blue-500 hover:bg-blue-800 text-white font-bold p-2 ps-3 pe-3 rounded' onClick={handleFacebookLogIn}>Facebook Login</button>
+          }
+          
+        </div>
+
+        <div>
+          <img src={user.photoURL} alt="" />
+          <h2>{user.displayName}</h2>
+        </div>
+
   <form onSubmit={handleSignIn} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
     <div className="mb-4">
       <label className="block text-gray-700 text-sm font-bold mb-2" for="YourName">
